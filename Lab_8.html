@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --blue-light: #3498db;
+            --blue-dark: #2980b9;
+            --red: #e74c3c;
+            --black: #2c3e50;
+            --white: #ecf0f1;
+            --gray: #bdc3c7;
+            --bg-light: #f9f9f9;
+            --border: #e0e0e0;
+            --green: #2ecc71;
+            --yellow: #f1c40f;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-light);
+            color: var(--black);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        /* Навигация */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--black);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-icon {
+            color: var(--blue-light);
+        }
+        
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+        
+        .nav-link {
+            color: var(--black);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+            transition: color 0.2s;
+            position: relative;
+        }
+        
+        .nav-link:hover {
+            color: var(--blue-light);
+        }
+        
+        .nav-link.active {
+            color: var(--blue-light);
+        }
+        
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -24px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--blue-light);
+            border-radius: 2px 2px 0 0;
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--black);
+            cursor: pointer;
+        }
+        
+        /* Основной контент */
+        .main-container {
+            max-width: 800px;
+            margin: 100px auto 40px;
+            padding: 0 24px;
+        }
+        
+        .todo-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .todo-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .todo-title {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .todo-subtitle {
+            font-size: 16px;
+            color: #666;
+        }
+        
+        /* Статистика */
+        .stats-section {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            display: block;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--blue-dark);
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            display: block;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        /* Ввод задачи */
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        
+        #taskInput {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        #taskInput:focus {
+            outline: none;
+            border-color: var(--blue-light);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        #addTaskBtn {
+            padding: 15px 25px;
+            background: var(--blue-light);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        #addTaskBtn:hover {
+            background: var(--blue-dark);
+        }
+        
+        /* Фильтры */
+        .filter-section {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .filter-btn {
+            padding: 12px 24px;
+            background: var(--white);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            color: var(--black);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn.active {
+            background: var(--blue-light);
+            color: white;
+            border-color: var(--blue-light);
+        }
+        
+        .filter-btn:hover:not(.active) {
+            background: var(--gray);
+        }
+        
+        /* Список задач */
+        #taskList {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            margin-bottom: 30px;
+        }
+        
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 20px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            transition: all 0.3s;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .task-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .task-item.completed {
+            background: rgba(46, 204, 113, 0.1);
+            border-color: rgba(46, 204, 113, 0.3);
+        }
+        
+        .task-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+            cursor: pointer;
+        }
+        
+        .task-checkbox {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: var(--green);
+        }
+        
+        .task-text {
+            font-size: 16px;
+            color: var(--black);
+        }
+        
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: #888;
+        }
+        
+        .task-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .task-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .task-edit {
+            background: var(--yellow);
+            color: var(--black);
+        }
+        
+        .task-edit:hover {
+            background: #e0b30f;
+        }
+        
+        .task-delete {
+            background: var(--red);
+            color: white;
+        }
+        
+        .task-delete:hover {
+            background: #c0392b;
+        }
+        
+        /* Действия */
+        .actions-section {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+        
+        .action-btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex: 1;
+        }
+        
+        .clear-completed {
+            background: var(--yellow);
+            color: var(--black);
+        }
+        
+        .clear-completed:hover {
+            background: #e0b30f;
+        }
+        
+        .clear-all {
+            background: var(--red);
+            color: white;
+        }
+        
+        .clear-all:hover {
+            background: #c0392b;
+        }
+        
+        /* Пустой список */
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #888;
+        }
+        
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: var(--gray);
+        }
+        
+        .empty-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .empty-text {
+            font-size: 14px;
+        }
+        
+        /* Уведомления */
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 10000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            animation: fadeInOut 3s forwards;
+        }
+        
+        .notification.success {
+            background: var(--green);
+        }
+        
+        .notification.error {
+            background: var(--red);
+        }
+        
+        .notification.info {
+            background: var(--blue-light);
+        }
+        
+        /* Футер */
+        footer {
+            background: var(--black);
+            color: white;
+            padding: 40px 24px;
+            margin-top: 60px;
+        }
+        
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .footer-text {
+            color: var(--gray);
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .storage-status {
+            color: var(--blue-light);
+            font-weight: 600;
+        }
+        
+        /* Анимации */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-20px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .header-container {
+                padding: 0 16px;
+            }
+            
+            .nav-menu {
+                position: fixed;
+                top: 70px;
+                left: -100%;
+                flex-direction: column;
+                background: white;
+                width: 100%;
+                padding: 20px;
+                transition: 0.3s;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+                z-index: 999;
+                gap: 0;
+            }
+            
+            .nav-menu.active {
+                left: 0;
+            }
+            
+            .nav-link {
+                display: block;
+                padding: 15px;
+                border-bottom: 1px solid var(--border);
+            }
+            
+            .nav-link.active::after {
+                display: none;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .main-container {
+                margin-top: 80px;
+                padding: 0 16px;
+            }
+            
+            .todo-container {
+                padding: 20px;
+            }
+            
+            .todo-title {
+                font-size: 28px;
+            }
+            
+            .input-section {
+                flex-direction: column;
+            }
+            
+            .filter-section {
+                flex-wrap: wrap;
+            }
+            
+            .stats-section {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .actions-section {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигация -->
+    <header>
+        <div class="header-container">
+            <a href="#" class="logo">
+                <i class="fas fa-check-circle logo-icon"></i>
+                ToDo App
+            </a>
+            
+            <nav>
+                <ul class="nav-menu" id="navMenu">
+                    <li><a href="#" class="nav-link active">Главная</a></li>
+                    <li><a href="#about" class="nav-link">О приложении</a></li>
+                    <li><a href="#tasks" class="nav-link">Мои задачи</a></li>
+                    <li><a href="#stats" class="nav-link">Статистика</a></li>
+                </ul>
+            </nav>
+            
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <main class="main-container">
+        <div class="todo-container">
+            <div class="todo-header">
+                <h1 class="todo-title">
+                    <i class="fas fa-tasks"></i>
+                    Мой список задач
+                </h1>
+                <p class="todo-subtitle">Организуйте свои задачи эффективно и продуктивно</p>
+            </div>
+            
+            <!-- Статистика -->
+            <div class="stats-section" id="stats">
+                <div class="stat-item">
+                    <span class="stat-value" id="totalTasks">0</span>
+                    <span class="stat-label">Всего задач</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="completedTasks">0</span>
+                    <span class="stat-label">Выполнено</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="pendingTasks">0</span>
+                    <span class="stat-label">Осталось</span>
+                </div>
+            </div>
+            
+            <!-- Ввод задачи -->
+            <div class="input-section">
+                <input type="text" id="taskInput" placeholder="Введите новую задачу...">
+                <button id="addTaskBtn">
+                    <i class="fas fa-plus"></i>
+                    Добавить
+                </button>
+            </div>
+            
+            <!-- Фильтры -->
+            <div class="filter-section">
+                <button id="filterAll" class="filter-btn active">Все задачи</button>
+                <button id="filterCompleted" class="filter-btn">Выполненные</button>
+                <button id="filterUncompleted" class="filter-btn">Невыполненные</button>
+            </div>
+            
+            <!-- Список задач -->
+            <ul id="taskList"></ul>
+            
+            <!-- Действия -->
+            <div class="actions-section">
+                <button id="clearCompletedBtn" class="action-btn clear-completed">
+                    <i class="fas fa-check-double"></i>
+                    Очистить выполненные
+                </button>
+                <button id="clearAllBtn" class="action-btn clear-all">
+                    <i class="fas fa-trash-alt"></i>
+                    Очистить все
+                </button>
+            </div>
+            
+            <!-- О приложении -->
+            <div id="about" style="margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border);">
+                <h3 style="margin-bottom: 15px; color: var(--blue-dark);">
+                    <i class="fas fa-info-circle"></i> О приложении
+                </h3>
+                <p style="color: #666; line-height: 1.6;">
+                    Это приложение позволяет эффективно управлять вашими задачами. 
+                    Вы можете добавлять новые задачи, отмечать их как выполненные, 
+                    редактировать и удалять. Все задачи сохраняются в вашем браузере, 
+                    поэтому они не пропадут после перезагрузки страницы.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Футер -->
+    <footer>
+        <div class="footer-container">
+            <p class="footer-text">© 2023 ToDo List App. Все права защищены.</p>
+            <p class="footer-text">
+                Данные сохранены в <span class="storage-status" id="storageStatus">localStorage</span>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Элементы DOM
+        const taskInput = document.getElementById('taskInput');
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const taskList = document.getElementById('taskList');
+        const filterAllBtn = document.getElementById('filterAll');
+        const filterCompletedBtn = document.getElementById('filterCompleted');
+        const filterUncompletedBtn = document.getElementById('filterUncompleted');
+        const clearCompletedBtn = document.getElementById('clearCompletedBtn');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const totalTasksEl = document.getElementById('totalTasks');
+        const completedTasksEl = document.getElementById('completedTasks');
+        const pendingTasksEl = document.getElementById('pendingTasks');
+        const menuToggle = document.getElementById('menuToggle');
+        const navMenu = document.getElementById('navMenu');
+        const storageStatus = document.getElementById('storageStatus');
+        
+        // Переменные состояния
+        let tasks = [];
+        let currentFilter = 'all';
+        
+        // Инициализация приложения
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTasks();
+            updateStats();
+            setupEventListeners();
+            updateStorageStatus();
+            
+            // Запуск демо-данных если список пуст
+            if (tasks.length === 0) {
+                setTimeout(() => {
+                    showNotification('Добро пожаловать! Добавьте первую задачу или используйте демо-данные', 'info');
+                    setTimeout(() => {
+                        if (tasks.length === 0) {
+                            loadDemoData();
+                        }
+                    }, 2000);
+                }, 1000);
+            }
+        });
+        
+        // Настройка обработчиков событий
+        function setupEventListeners() {
+            // Добавление задачи
+            addTaskBtn.addEventListener('click', addTask);
+            taskInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') addTask();
+            });
+            
+            // Фильтрация задач
+            filterAllBtn.addEventListener('click', () => setFilter('all'));
+            filterCompletedBtn.addEventListener('click', () => setFilter('completed'));
+            filterUncompletedBtn.addEventListener('click', () => setFilter('uncompleted'));
+            
+            // Очистка задач
+            clearCompletedBtn.addEventListener('click', clearCompletedTasks);
+            clearAllBtn.addEventListener('click', clearAllTasks);
+            
+            // Бургер-меню
+            menuToggle.addEventListener('click', toggleMobileMenu);
+            
+            // Закрытие меню при клике на ссылку
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', closeMobileMenu);
+            });
+            
+            // Плавная прокрутка для якорных ссылок
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 100,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        }
+        
+        // Добавление новой задачи
+        function addTask() {
+            const taskText = taskInput.value.trim();
+            
+            if (taskText === '') {
+                showNotification('Введите текст задачи!', 'error');
+                taskInput.focus();
+                return;
+            }
+            
+            const newTask = {
+                id: Date.now(),
+                text: taskText,
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+            
+            tasks.push(newTask);
+            saveTasks();
+            renderTasks();
+            taskInput.value = '';
+            taskInput.focus();
+            
+            showNotification('Задача добавлена!', 'success');
+        }
+        
+        // Удаление задачи
+        function deleteTask(id) {
+            const taskToDelete = tasks.find(task => task.id === id);
+            tasks = tasks.filter(task => task.id !== id);
+            saveTasks();
+            renderTasks();
+            showNotification(`Задача "${taskToDelete.text.substring(0, 30)}${taskToDelete.text.length > 30 ? '...' : ''}" удалена`, 'info');
+        }
+        
+        // Редактирование задачи
+        function editTask(id) {
+            const taskToEdit = tasks.find(task => task.id === id);
+            const newText = prompt('Редактировать задачу:', taskToEdit.text);
+            
+            if (newText !== null && newText.trim() !== '') {
+                taskToEdit.text = newText.trim();
+                saveTasks();
+                renderTasks();
+                showNotification('Задача обновлена', 'success');
+            }
+        }
+        
+        // Переключение статуса задачи
+        function toggleTaskCompletion(id) {
+            tasks = tasks.map(task => {
+                if (task.id === id) {
+                    const newStatus = !task.completed;
+                    if (newStatus) {
+                        setTimeout(() => showNotification('Задача выполнена!', 'success'), 100);
+                    }
+                    return { ...task, completed: newStatus };
+                }
+                return task;
+            });
+            
+            saveTasks();
+            renderTasks();
+        }
+        
+        // Установка фильтра
+        function setFilter(filter) {
+            currentFilter = filter;
+            
+            // Обновление активной кнопки фильтра
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            if (filter === 'all') filterAllBtn.classList.add('active');
+            else if (filter === 'completed') filterCompletedBtn.classList.add('active');
+            else if (filter === 'uncompleted') filterUncompletedBtn.classList.add('active');
+            
+            renderTasks();
+            showNotification(`Показаны: ${getFilterName(filter)}`, 'info');
+        }
+        
+        // Получение названия фильтра
+        function getFilterName(filter) {
+            switch(filter) {
+                case 'all': return 'Все задачи';
+                case 'completed': return 'Выполненные задачи';
+                case 'uncompleted': return 'Невыполненные задачи';
+                default: return 'Все задачи';
+            }
+        }
+        
+        // Очистка выполненных задач
+        function clearCompletedTasks() {
+            const completedTasks = tasks.filter(task => task.completed);
+            const completedCount = completedTasks.length;
+            
+            if (completedCount === 0) {
+                showNotification('Нет выполненных задач для очистки', 'info');
+                return;
+            }
+            
+            if (confirm(`Вы уверены, что хотите удалить ${completedCount} выполненных задач?`)) {
+                tasks = tasks.filter(task => !task.completed);
+                saveTasks();
+                renderTasks();
+                showNotification(`Удалено ${completedCount} выполненных задач`, 'success');
+            }
+        }
+        
+        // Очистка всех задач
+        function clearAllTasks() {
+            if (tasks.length === 0) {
+                showNotification('Список задач уже пуст', 'info');
+                return;
+            }
+            
+            if (confirm(`Вы уверены, что хотите удалить все задачи (${tasks.length})?`)) {
+                tasks = [];
+                saveTasks();
+                renderTasks();
+                showNotification('Все задачи удалены', 'success');
+            }
+        }
+        
+        // Отображение задач с учетом фильтра
+        function renderTasks() {
+            // Фильтрация задач
+            let filteredTasks = tasks;
+            if (currentFilter === 'completed') {
+                filteredTasks = tasks.filter(task => task.completed);
+            } else if (currentFilter === 'uncompleted') {
+                filteredTasks = tasks.filter(task => !task.completed);
+            }
+            
+            // Очистка списка
+            taskList.innerHTML = '';
+            
+            // Отображение отфильтрованных задач
+            if (filteredTasks.length === 0) {
+                const emptyMessage = document.createElement('div');
+                emptyMessage.className = 'empty-state';
+                emptyMessage.innerHTML = `
+                    <div class="empty-icon">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <h3 class="empty-title">${getEmptyMessage()}</h3>
+                    <p class="empty-text">${getEmptySubmessage()}</p>
+                `;
+                taskList.appendChild(emptyMessage);
+            } else {
+                filteredTasks.forEach(task => {
+                    const taskItem = createTaskElement(task);
+                    taskList.appendChild(taskItem);
+                });
+            }
+            
+            updateStats();
+        }
+        
+        // Создание элемента задачи
+        function createTaskElement(task) {
+            const li = document.createElement('li');
+            li.className = 'task-item';
+            if (task.completed) li.classList.add('completed');
+            
+            // Форматирование даты создания
+            const createdAt = new Date(task.createdAt);
+            const formattedDate = createdAt.toLocaleDateString('ru-RU', {
+                day: 'numeric',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            li.innerHTML = `
+                <div class="task-content">
+                    <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
+                    <div>
+                        <div class="task-text">${task.text}</div>
+                        <small style="color: #888; font-size: 12px;">Добавлено: ${formattedDate}</small>
+                    </div>
+                </div>
+                <div class="task-actions">
+                    <button class="task-btn task-edit" title="Редактировать задачу">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="task-btn task-delete" title="Удалить задачу">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            `;
+            
+            // Обработчики для кнопок
+            const toggleBtn = li.querySelector('.task-checkbox');
+            const editBtn = li.querySelector('.task-edit');
+            const deleteBtn = li.querySelector('.task-delete');
+            const taskContent = li.querySelector('.task-content');
+            
+            toggleBtn.addEventListener('change', () => toggleTaskCompletion(task.id));
+            editBtn.addEventListener('click', () => editTask(task.id));
+            deleteBtn.addEventListener('click', () => deleteTask(task.id));
+            
+            // Отметка выполнения по клику на задачу
+            taskContent.addEventListener('click', (e) => {
+                if (e.target !== toggleBtn && e.target !== editBtn && !e.target.closest('.task-edit')) {
+                    toggleTaskCompletion(task.id);
+                }
+            });
+            
+            return li;
+        }
+        
+        // Обновление статистики
+        function updateStats() {
+            const total = tasks.length;
+            const completed = tasks.filter(task => task.completed).length;
+            const pending = total - completed;
+            
+            totalTasksEl.textContent = total;
+            completedTasksEl.textContent = completed;
+            pendingTasksEl.textContent = pending;
+        }
+        
+        // Обновление статуса хранилища
+        function updateStorageStatus() {
+            if (typeof(Storage) !== "undefined") {
+                storageStatus.textContent = "localStorage (работает)";
+                storageStatus.style.color = "var(--green)";
+            } else {
+                storageStatus.textContent = "не поддерживается";
+                storageStatus.style.color = "var(--red)";
+            }
+        }
+        
+        // Сохранение задач в localStorage
+        function saveTasks() {
+            try {
+                localStorage.setItem('todoTasks', JSON.stringify(tasks));
+            } catch (e) {
+                showNotification('Ошибка сохранения данных', 'error');
+            }
+        }
+        
+        // Загрузка задач из localStorage
+        function loadTasks() {
+            try {
+                const savedTasks = localStorage.getItem('todoTasks');
+                if (savedTasks) {
+                    tasks = JSON.parse(savedTasks);
+                    renderTasks();
+                    showNotification('Задачи загружены из сохранённых данных', 'info');
+                }
+            } catch (e) {
+                showNotification('Ошибка загрузки данных', 'error');
+            }
+        }
+        
+        // Загрузка демо-данных
+        function loadDemoData() {
+            const demoTasks = [
+                { id: 1, text: 'Изучить JavaScript', completed: true, createdAt: new Date(Date.now() - 86400000).toISOString() },
+                { id: 2, text: 'Создать To-Do List приложение', completed: true, createdAt: new Date(Date.now() - 43200000).toISOString() },
+                { id: 3, text: 'Добавить сохранение в localStorage', completed: false, createdAt: new Date(Date.now() - 21600000).toISOString() },
+                { id: 4, text: 'Реализовать фильтрацию задач', completed: false, createdAt: new Date().toISOString() },
+                { id: 5, text: 'Сделать адаптивный дизайн', completed: false, createdAt: new Date().toISOString() }
+            ];
+            
+            tasks = demoTasks;
+            saveTasks();
+            renderTasks();
+            showNotification('Загружены демо-задачи для примера', 'info');
+        }
+        
+        // Получение сообщения для пустого списка
+        function getEmptyMessage() {
+            if (currentFilter === 'all' && tasks.length === 0) {
+                return 'Список задач пуст';
+            } else if (currentFilter === 'completed') {
+                return 'Нет выполненных задач';
+            } else if (currentFilter === 'uncompleted') {
+                return 'Все задачи выполнены!';
+            }
+            return 'Нет задач для отображения';
+        }
+        
+        // Получение подсообщения для пустого списка
+        function getEmptySubmessage() {
+            if (currentFilter === 'all' && tasks.length === 0) {
+                return 'Добавьте первую задачу в поле выше';
+            } else if (currentFilter === 'completed') {
+                return 'Отметьте некоторые задачи как выполненные';
+            } else if (currentFilter === 'uncompleted') {
+                return 'Отличная работа!';
+            }
+            return 'Измените фильтр или добавьте новые задачи';
+        }
+        
+        // Показать уведомление
+        function showNotification(message, type) {
+            // Удаляем существующие уведомления
+            document.querySelectorAll('.notification').forEach(el => el.remove());
+            
+            // Создание элемента уведомления
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Удаление уведомления через 3 секунды
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.style.animation = 'fadeInOut 0.5s forwards';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 500);
+                }
+            }, 3000);
+        }
+        
+        // Бургер-меню для мобильной версии
+        function toggleMobileMenu() {
+            navMenu.classList.toggle('active');
+            menuToggle.innerHTML = navMenu.classList.contains('active') 
+                ? '<i class="fas fa-times"></i>' 
+                : '<i class="fas fa-bars"></i>';
+            
+            // Блокировка прокрутки body при открытом меню
+            document.body.style.overflow = navMenu.classList.contains('active') ? 'hidden' : '';
+        }
+        
+        function closeMobileMenu() {
+            navMenu.classList.remove('active');
+            menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+            document.body.style.overflow = '';
+        }
+    </script>
+</body>
+</html>
